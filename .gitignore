@@ -26,7 +26,6 @@ Thumbs.db
 desktop.ini
 
 # Machine learning models (if any)
-*.pkl
 *.h5
 *.model
 
