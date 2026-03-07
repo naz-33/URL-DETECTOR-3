@@ -352,21 +352,6 @@ def render_results_ui(result: dict) -> None:
         unsafe_allow_html=True,
     )
 
-    # ── Mismatch notice ───────────────────────────────────────────────
-    mismatch_html = ""
-    if phishing_prob < 0.30 and status in ("suspicious", "phishing"):
-        mismatch_html = (
-            '<div class="mismatch-notice mismatch-rules">'
-            'Heuristic rules detected suspicious patterns despite a low model probability.'
-            '</div>'
-        )
-    elif phishing_prob >= 0.50 and rule_score < 2:
-        mismatch_html = (
-            '<div class="mismatch-notice mismatch-model">'
-            '🔍 Model probability is high even though no major heuristic rules triggered.'
-            '</div>'
-        )
-
     # ── Detection Reasons ─────────────────────────────────────────────
     friendly_reasons = [_friendly_rule(h) for h in rule_hits]
     if friendly_reasons:
@@ -380,7 +365,6 @@ def render_results_ui(result: dict) -> None:
         reasons_body = '<p class="reasons-none">No major red flags detected.</p>'
 
     st.markdown(
-        f'{mismatch_html}'
         f'<div class="detection-reasons">'
         f'  <div class="reasons-title">Detection reasons:</div>'
         f'  {reasons_body}'
