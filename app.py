@@ -358,16 +358,13 @@ def render_results_ui(result: dict) -> None:
         reasons_body = (
             f'<ul class="reasons-list">{bullets}</ul>'
         )
-    else:
-        reasons_body = '<p class="reasons-none">No major red flags detected.</p>'
-
-    st.markdown(
-        f'<div class="detection-reasons">'
-        f'  <div class="reasons-title">Detection reasons:</div>'
-        f'  {reasons_body}'
-        f'</div>',
-        unsafe_allow_html=True,
-    )
+        st.markdown(
+            f'<div class="detection-reasons">'
+            f'  <div class="reasons-title">Detection reasons:</div>'
+            f'  {reasons_body}'
+            f'</div>',
+            unsafe_allow_html=True,
+        )
 
     # ── Detailed Analysis Expander ────────────────────────────────────
     with st.expander("Detailed analysis"):
@@ -389,33 +386,6 @@ def render_results_ui(result: dict) -> None:
             f'<span class="value {color_cls}">{prob_pct:.1f}%</span></div>'
             f'<div class="section-row"><span>Risk Category</span>'
             f'<span class="risk-category-badge {badge_cls}">{risk_label}</span></div>'
-            '</div>',
-            unsafe_allow_html=True,
-        )
-
-        # — Rule details section —
-        if engine_error:
-            hits_html = (
-                f'<div class="rule-hit" style="color:#b91c1c;">'
-                f'<span class="dot" style="background:#b91c1c;"></span>'
-                f'<span>Rule engine error: {engine_error}</span>'
-                f'</div>'
-            )
-        elif rule_hits:
-            hits_html = "".join(
-                f'<div class="rule-hit"><span class="dot"></span><span>{h}</span></div>'
-                for h in rule_hits
-            )
-        else:
-            hits_html = '<div class="rule-no-hit">✔ No heuristic red flags detected.</div>'
-
-        st.markdown(
-            '<div class="detail-section">'
-            '<div class="detail-section-title">Rule details</div>'
-            f'<div class="section-row"><span>Rule Score</span>'
-            f'<span class="value">{rule_score}</span></div>'
-            '<div class="detail-subsection-label">Triggered rules</div>'
-            f'{hits_html}'
             '</div>',
             unsafe_allow_html=True,
         )
