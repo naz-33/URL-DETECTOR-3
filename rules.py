@@ -24,23 +24,13 @@ NEUTRAL_SECURITY_WORDS = [
 
 # Well-known legitimate platforms; do NOT classify UNSAFE based only on keywords
 TRUSTED_DOMAINS = {
-    "github.com",
-    "google.com",
-    "microsoft.com",
-    "microsoftonline.com",
-    "paypal.com",
-    "amazon.com",
-    "facebook.com",
-    "instagram.com",
-    "apple.com",
-    "linkedin.com",
-    "netflix.com",
-    "stripe.com",
-    "aws.amazon.com",
-    "dropbox.com",
-    "twitter.com",
-    "x.com",
-    "chatgpt.com",
+    "github.com", "google.com", "microsoft.com", "microsoftonline.com", "paypal.com",
+    "amazon.com", "facebook.com", "instagram.com", "apple.com", "linkedin.com",
+    "netflix.com", "stripe.com", "aws.amazon.com", "dropbox.com", "twitter.com",
+    "x.com", "chatgpt.com",
+    "bdo.com.ph", "bpi.com.ph", "metrobank.com.ph", "unionbankph.com", "pnb.com.ph",
+    "securitybank.com", "chinabank.ph", "rcbc.com", "aub.com.ph", "dbp.ph", "landbank.com",
+    "umindanao.blackboard.com", "student.umindanao.edu.ph", "umindanao.edu.ph"
 }
 
 # All sensitive/phishing-related words (for detection display)
@@ -60,7 +50,9 @@ BRAND_NAMES = [
     "amazon", "apple", "paypal", "netflix", "facebook", "instagram", "twitter",
     "linkedin", "dropbox", "adobe", "dhl", "fedex", "ups", "usps",
     "chase", "bankofamerica", "wellsfargo", "citibank", "capitalone",
-    "ebay", "aliexpress", "walmart", "target", "bestbuy", "costco","chatgpt",
+    "ebay", "aliexpress", "walmart", "target", "bestbuy", "costco", "chatgpt",
+    "bdo", "bpi", "metrobank", "unionbank", "pnb", "securitybank", "chinabank", 
+    "rcbc", "aub", "dbp", "landbank", "citysavings", "ofbank","umindanao","blackboard"
 ]
 
 # Suspicious TLDs often used in phishing
@@ -279,7 +271,7 @@ def _get_registered_domain(hostname: str) -> str:
 
 
 def _is_trusted_domain(url: str) -> bool:
-    """Check if registrable domain is a well-known legitimate platform."""
+    """Check if hostname or registrable domain is a well-known legitimate platform."""
     if not url or not isinstance(url, str):
         return False
     url = url.strip()
@@ -290,6 +282,9 @@ def _is_trusted_domain(url: str) -> bool:
         hostname = (parsed.netloc or "").lower()
     except Exception:
         return False
+    # Check both full hostname and registered domain  
+    if hostname in TRUSTED_DOMAINS:
+        return True
     reg_domain = _get_registered_domain(hostname)
     return reg_domain in TRUSTED_DOMAINS
 
@@ -432,6 +427,9 @@ def detect_subdomain_tricks(url: str) -> list[str]:
     url = url.strip()
     if url and "://" not in url:
         url = "http://" + url
+    # Skip trusted domains to avoid false positives  
+    if _is_trusted_domain(url):
+        return []
     try:
         parsed = urlparse(url)
         hostname = (parsed.netloc or "").lower()
