@@ -7,6 +7,7 @@ import os
 import warnings
 from urllib.parse import urlparse
 from url_features import extract_url_features
+from rules import _is_trusted_domain
 
 # Common legitimate TLDs for domain validation
 COMMON_TLDS = {
@@ -313,15 +314,12 @@ def render_results_ui(result: dict) -> None:
     if prediction in ("Malicious (Rules)", "Malicious (Model)"):
         status       = "phishing"
         status_label = "Phishing"
-        status_icon  = "🚫"
     elif prediction == "Suspicious":
         status       = "suspicious"
         status_label = "Suspicious"
-        status_icon  = "⚠️"
     else:
         status       = "safe"
         status_label = "Safe"
-        status_icon  = "🛡️"
 
     bar_colors = {"safe": "#15803d", "suspicious": "#b45309", "phishing": "#b91c1c"}
     bar_color  = bar_colors[status]
@@ -330,7 +328,6 @@ def render_results_ui(result: dict) -> None:
     st.markdown(
         f'<div class="result-card result-card-{status}">'
         f'  <div class="result-card-header">'
-        f'    <span class="result-card-icon">{status_icon}</span>'
         f'    <span class="result-card-title">Result: {status_label}</span>'
         f'  </div>'
         f'</div>',
@@ -548,7 +545,14 @@ if predict_clicked and model_loaded:
 
             rule_score, rule_hits, engine_error = rule_based_checks(url_to_analyze)
 
-            if rule_score >= 5:
+            # Check if domain is trusted - override ML prediction if it is
+            is_trusted = _is_trusted_domain(url_to_analyze)
+            
+            if is_trusted and rule_score < 5:
+                # Trusted domain without serious rule violations - override ML false positives
+                # (allows common keywords like "login" on legitimate sites)
+                final_label = "Safe"
+            elif rule_score >= 5:
                 final_label = "Malicious (Rules)"
             elif phishing_prob >= 0.5:
                 final_label = "Malicious (Model)"
