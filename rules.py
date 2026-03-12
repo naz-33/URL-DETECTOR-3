@@ -263,11 +263,40 @@ def detect_misspelled_brands(url: str) -> list[tuple[str, str]]:
 
 
 def _get_registered_domain(hostname: str) -> str:
-    """Extract the registered domain (e.g. example.com from sub.example.com)."""
+    """Extract the registered domain (e.g. example.com from sub.example.com).
+    Handles multi-level TLDs like .com.ph, .co.uk, etc.
+    """
+    # Known multi-level TLDs (country-code second-level domains)
+    MULTI_LEVEL_TLDS = {
+        ".com.ph", ".co.ph", ".net.ph", ".org.ph", ".gov.ph", ".edu.ph",
+        ".co.uk", ".org.uk", ".ac.uk", ".gov.uk",
+        ".com.au", ".net.au", ".org.au", ".edu.au", ".gov.au",
+        ".co.nz", ".net.nz", ".org.nz", ".ac.nz", ".govt.nz",
+        ".co.za", ".net.za", ".org.za", ".gov.za", ".ac.za",
+        ".co.in", ".net.in", ".org.in", ".ac.in", ".gov.in",
+        ".co.jp", ".or.jp", ".ne.jp", ".ac.jp", ".go.jp",
+        ".co.kr", ".or.kr", ".ne.kr", ".ac.kr", ".go.kr",
+        ".com.br", ".net.br", ".org.br", ".gov.br", ".edu.br",
+        ".com.cn", ".net.cn", ".org.cn", ".gov.cn", ".edu.cn",
+        ".com.sg", ".net.sg", ".org.sg", ".gov.sg", ".edu.sg",
+        ".com.my", ".net.my", ".org.my", ".gov.my", ".edu.my",
+        ".com.hk", ".net.hk", ".org.hk", ".gov.hk", ".edu.hk",
+    }
+    
     parts = hostname.lower().split(".")
-    if len(parts) >= 2:
-        return ".".join(parts[-2:])
-    return hostname.lower()
+    if len(parts) < 2:
+        return hostname.lower()
+    
+    # Check if domain uses a multi-level TLD
+    if len(parts) >= 3:
+        # Check last 3 parts (e.g., "com.ph")
+        potential_tld = "." + ".".join(parts[-2:])
+        if potential_tld in MULTI_LEVEL_TLDS:
+            # Return last 3 parts (e.g., "bdo.com.ph")
+            return ".".join(parts[-3:])
+    
+    # Default: return last 2 parts (e.g., "google.com")
+    return ".".join(parts[-2:])
 
 
 def _is_trusted_domain(url: str) -> bool:
